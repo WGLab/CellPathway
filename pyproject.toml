@@ -1,0 +1,24 @@
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cellpathway"
+version = "0.1.0"
+description = "Cell type-specific enhancer enrichment analysis for whole-genome sequencing studies"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.9"
+dependencies = [
+    "pandas>=1.5",
+    "scipy>=1.9",
+    "statsmodels>=0.13",
+    "pybedtools>=0.9",
+    "pyBigWig>=0.3",
+]
+
+[project.scripts]
+cellpathway = "cellpathway.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["cellpathway*"]
