@@ -1,74 +1,112 @@
 #!/usr/bin/env python
-"""Example: run the full CellPathway pipeline on the bundled autism dataset.
+"""CellPathway: cell type-specific enhancer enrichment analysis.
 
 Usage
 -----
-    cd CellPathway
-    python run_cellpathway.py
+    # Step 1-7: Enrichment analysis
+    python run_cellpathway.py enrich \
+        --enhancer-dir data/Atlas \
+        --dnm-file example/autism_dnm.txt \
+        --output-dir example \
+        --cadd-threshold 10
 
-This script mirrors the notebook workflow (Steps 1-8) using the Python API.
+    # Step 8: TAD annotation (run after enrichment)
+    python run_cellpathway.py tad \
+        --overlap-bed example/dnm_enhc_overlap_cadd_10/Fetal_brain_dnm.bed \
+        --tad-file data/tad_w_boundary_08.bed \
+        --elements-bb data/genes_w_noncoding.bb \
+        --gene-list example/SFARI_Gene.csv \
+        --output example/tad_Fetal_brain_autism.csv
 """
 
+import sys
 import os
-import pandas as pd
-from cellpathway import CellPathway
+import argparse
+
+# Allow importing cellpathway without pip install
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+from cellpathway.core import CellPathway
 from cellpathway.tad import annotate_tad
 
-# ------------------------------------------------------------------
-# 1. Paths — adjust if your data lives elsewhere
-# ------------------------------------------------------------------
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-ENHANCER_DIR = os.path.join(BASE_DIR, "data", "Atlas")
-DNM_FILE = os.path.join(BASE_DIR, "example", "autism_dnm.txt")
-OUTPUT_DIR = os.path.join(BASE_DIR, "example")
-TAD_FILE = os.path.join(BASE_DIR, "data", "tad_w_boundary_08.bed")
-ELEMENTS_BB = os.path.join(BASE_DIR, "data", "genes_w_noncoding.bb")
-SFARI_FILE = os.path.join(BASE_DIR, "example", "SFARI_Gene.csv")
+def cmd_enrich(args):
+    cp = CellPathway(
+        enhancer_dir=args.enhancer_dir,
+        dnm_file=args.dnm_file,
+        output_dir=args.output_dir,
+        cadd_threshold=args.cadd_threshold,
+        bedtools_path=args.bedtools_path,
+    )
+    results = cp.run()
 
-CADD_THRESHOLD = 10
+    top = results.sort_values("P_FDR").head(10)
+    print("\nTop 10 enriched cell types:")
+    print(top[["cell", "Fold_enrichment", "P_FDR"]].to_string(index=False))
 
-# ------------------------------------------------------------------
-# 2. Run enrichment analysis (Steps 1-7)
-# ------------------------------------------------------------------
-cp = CellPathway(
-    enhancer_dir=ENHANCER_DIR,
-    dnm_file=DNM_FILE,
-    output_dir=OUTPUT_DIR,
-    cadd_threshold=CADD_THRESHOLD,
-)
-results = cp.run()
 
-# Show top 10 enriched cell types
-top10 = results.sort_values("P_FDR").head(10)
-print("\n=== Top 10 enriched cell types ===")
-print(top10[["cell", "Fold_enrichment", "P_FDR"]].to_string(index=False))
+def cmd_tad(args):
+    import pandas as pd
 
-# ------------------------------------------------------------------
-# 3. TAD annotation (Step 8) — for the top cell type
-# ------------------------------------------------------------------
-top_cell = top10.iloc[0]["cell"]
-print(f"\nRunning TAD annotation for: {top_cell}")
+    gene_list = None
+    if args.gene_list:
+        genes_df = pd.read_csv(args.gene_list)
+        gene_list = genes_df["gene-symbol"].tolist()
 
-overlap_bed = os.path.join(
-    OUTPUT_DIR,
-    f"dnm_enhc_overlap_cadd_{CADD_THRESHOLD}",
-    f"{top_cell}_dnm.bed",
-)
+    results = annotate_tad(
+        overlap_bed_path=args.overlap_bed,
+        tad_path=args.tad_file,
+        elements_bb_path=args.elements_bb,
+        gene_list=gene_list,
+        output_path=args.output,
+    )
+    print(f"\nTAD annotation rows: {len(results)}")
+    print(results.head(10).to_string(index=False))
 
-# Load SFARI gene list
-sfari = pd.read_csv(SFARI_FILE)
-sfari_genes = sfari["gene-symbol"].tolist()
 
-tad_results = annotate_tad(
-    overlap_bed_path=overlap_bed,
-    tad_path=TAD_FILE,
-    elements_bb_path=ELEMENTS_BB,
-    gene_list=sfari_genes,
-    output_path=os.path.join(OUTPUT_DIR, f"tad_{top_cell}_autism.csv"),
-)
+def main():
+    parser = argparse.ArgumentParser(
+        prog="run_cellpathway",
+        description="CellPathway: cell type-specific enhancer enrichment analysis",
+    )
+    subparsers = parser.add_subparsers(dest="command")
 
-print(f"\nTAD annotation rows: {len(tad_results)}")
-print("Sample output:")
-print(tad_results[["enh_chr", "enh_start", "enh_end", "n_genes",
-                    "known_gene_overlap"]].head(10).to_string(index=False))
+    # --- enrich ---
+    enrich = subparsers.add_parser("enrich", help="Run enrichment (Steps 1-7)")
+    enrich.add_argument("--enhancer-dir", required=True,
+                        help="Directory with <CellType>.hg38.bed files")
+    enrich.add_argument("--dnm-file", required=True,
+                        help="DNM file (tab-delimited: Chr, Start, End, CADD_PHRED)")
+    enrich.add_argument("--output-dir", required=True,
+                        help="Output directory")
+    enrich.add_argument("--cadd-threshold", type=float, default=10,
+                        help="CADD PHRED threshold (default: 10)")
+    enrich.add_argument("--bedtools-path", default="bedtools",
+                        help="Path to bedtools binary (default: bedtools)")
+
+    # --- tad ---
+    tad = subparsers.add_parser("tad", help="TAD annotation (Step 8)")
+    tad.add_argument("--overlap-bed", required=True,
+                     help="Overlap BED file from enrichment step")
+    tad.add_argument("--tad-file", required=True,
+                     help="TAD BED file (col4 = 0/1 label)")
+    tad.add_argument("--elements-bb", required=True,
+                     help="Gene annotation .bb file")
+    tad.add_argument("--gene-list", default=None,
+                     help="CSV with known disease genes (column 'gene-symbol')")
+    tad.add_argument("--output", required=True,
+                     help="Output CSV path")
+
+    args = parser.parse_args()
+    if args.command is None:
+        parser.print_help()
+        sys.exit(0)
+
+    if args.command == "enrich":
+        cmd_enrich(args)
+    elif args.command == "tad":
+        cmd_tad(args)
+
+
+if __name__ == "__main__":
+    main()

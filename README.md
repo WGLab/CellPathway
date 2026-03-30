@@ -6,84 +6,58 @@ CellPathway is a framework that directly tests associations between noncoding va
 
 ## Installation
 
-### Prerequisites
-
-- Python >= 3.9
-- [bedtools](https://bedtools.readthedocs.io/) must be installed and available on your `PATH`
-
-### Install from source
+### Step 1: Clone the repository
 
 ```bash
-git clone https://github.com/<your-username>/CellPathway.git
+git clone https://github.com/WGLab/CellPathway.git
 cd CellPathway
-pip install .
 ```
 
-For development (editable install):
+### Step 2: Create a conda environment
 
 ```bash
-pip install -e .
+conda create -n cellpathway python=3.10 -y
+conda activate cellpathway
+```
+
+### Step 3: Install bedtools
+
+```bash
+conda install -c bioconda bedtools -y
+```
+
+### Step 4: Install Python dependencies
+
+```bash
+pip install -r requirements.txt
 ```
 
 ## Quick start
 
-### Python API
-
-```python
-from cellpathway import CellPathway
-from cellpathway.tad import annotate_tad
-
-# Step 1-7: Enrichment analysis
-cp = CellPathway(
-    enhancer_dir="data/Atlas",
-    dnm_file="example/autism_dnm.txt",
-    output_dir="example",
-    cadd_threshold=10,
-)
-results = cp.run()
-
-# Show top enriched cell types
-print(results.sort_values("P_FDR").head(10))
-
-# Step 8: TAD annotation for a specific cell type
-import pandas as pd
-sfari = pd.read_csv("example/SFARI_Gene.csv")
-
-tad_results = annotate_tad(
-    overlap_bed_path="example/dnm_enhc_overlap_cadd_10/Fetal_brain_dnm.bed",
-    tad_path="data/tad_w_boundary_08.bed",
-    elements_bb_path="data/genes_w_noncoding.bb",
-    gene_list=sfari["gene-symbol"].tolist(),
-    output_path="example/tad_brain_autism.csv",
-)
-```
-
-### Command line
+### Step 1-7: Run enrichment analysis
 
 ```bash
-# Run enrichment (Steps 1-7)
-cellpathway enrich \
+python run_cellpathway.py enrich \
     --enhancer-dir data/Atlas \
     --dnm-file example/autism_dnm.txt \
     --output-dir example \
     --cadd-threshold 10
+```
 
-# TAD annotation (Step 8)
-cellpathway tad \
+### Step 8: TAD annotation
+
+After enrichment, run TAD annotation for a specific cell type using the overlap BED file generated in the previous step:
+
+```bash
+python run_cellpathway.py tad \
     --overlap-bed example/dnm_enhc_overlap_cadd_10/Fetal_brain_dnm.bed \
     --tad-file data/tad_w_boundary_08.bed \
     --elements-bb data/genes_w_noncoding.bb \
     --gene-list example/SFARI_Gene.csv \
-    --output example/tad_brain_autism.csv
+    --output example/tad_Fetal_brain_autism.csv
 ```
 
-### Example script
-
-A complete example using the bundled autism dataset:
-
-```bash
-python run_cellpathway.py
-```
+The `--overlap-bed` path comes from the enrichment output. Replace `Fetal_brain` with any cell type from your results.
 
 ## Input data
 
