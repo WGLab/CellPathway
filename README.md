@@ -2,7 +2,7 @@
 
 CellPathway is a framework that directly tests associations between noncoding variants and cell type-specific pathways defined by enhancer activity.
 
-<img width="710" height="851" alt="image" src="https://github.com/user-attachments/assets/eaefda92-e849-4018-a182-9fe5a3b930fe" />
+<img width="650" height="800" alt="image" src="https://github.com/user-attachments/assets/9136e029-a8ae-42dd-b835-cf2441e452a6" />
 
 ## Installation
 
@@ -34,7 +34,7 @@ pip install -r requirements.txt
 
 ## Quick start
 
-### Step 1-7: Run enrichment analysis
+### Step 5: Run enrichment analysis
 
 ```bash
 python cellpathway_enrich.py \
@@ -44,7 +44,7 @@ python cellpathway_enrich.py \
     --cadd-threshold 10
 ```
 
-### Step 8: TAD annotation
+### Step 6: TAD annotation
 
 After enrichment, run TAD annotation for a specific cell type using the overlap BED file generated in the previous step:
 
@@ -81,7 +81,3 @@ Before running CellPathway, noncoding de novo mutations must be prepared for all
 
 - [ANNOVAR](https://annovar.openbioinformatics.org/en/latest/)
 - [CADD](https://github.com/kircherlab/CADD-scripts)
-
-## License
-
-MIT
