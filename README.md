@@ -37,7 +37,7 @@ pip install -r requirements.txt
 ### Step 1-7: Run enrichment analysis
 
 ```bash
-python run_cellpathway.py enrich \
+python cellpathway_enrich.py \
     --enhancer-dir data/Atlas \
     --dnm-file example/autism_dnm.txt \
     --output-dir example \
@@ -49,7 +49,7 @@ python run_cellpathway.py enrich \
 After enrichment, run TAD annotation for a specific cell type using the overlap BED file generated in the previous step:
 
 ```bash
-python run_cellpathway.py tad \
+python cellpathway_tad.py \
     --overlap-bed example/dnm_enhc_overlap_cadd_10/Fetal_brain_dnm.bed \
     --tad-file data/tad_w_boundary_08.bed \
     --elements-bb data/genes_w_noncoding.bb \
