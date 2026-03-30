@@ -20,13 +20,13 @@ conda create -n cellpathway python=3.10 -y
 conda activate cellpathway
 ```
 
-### Step 3: Install bedtools
+### Step 3: Install bedtools and pyBigWig via conda
 
 ```bash
-conda install -c bioconda bedtools -y
+conda install -c bioconda bedtools pybigwig -y
 ```
 
-### Step 4: Install Python dependencies
+### Step 4: Install remaining Python dependencies
 
 ```bash
 pip install -r requirements.txt
