@@ -3,7 +3,7 @@
 CellPathway is an integrative computational framework that combines tissue- and cell-type-specific enhancer annotations with TAD-constrained candidate-gene nomination to facilitate the interpretation of rare noncoding variants and characterize enhancer-enrichment patterns across developmental disorders.
 
 
-# Installation
+## Installation
 We recommend using Conda to set up the environment. If Conda is not installed, run the following commands in Linux to install it.
 
 ```
@@ -19,3 +19,13 @@ conda create -n cellpathway python=3.10
 conda activate cellpathway
 conda install -c conda-forge -c bioconda bedtools numpy pandas scipy statsmodels pybigwig -y
 ```
+
+
+
+## Preprocessing
+
+Before running CellPathway, noncoding de novo mutations must be prepared for all samples. We recommend using ANNOVAR to identify and filter rare noncoding variants and to annotate variant pathogenicity using Combined Annotation Dependent Depletion (CADD) scores.
+
+- [ANNOVAR](https://annovar.openbioinformatics.org/en/latest/)
+- [CADD](https://github.com/kircherlab/CADD-scripts)
+
