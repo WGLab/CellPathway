@@ -19,8 +19,39 @@ conda create -n cellpathway python=3.10
 conda activate cellpathway
 conda install -c conda-forge -c bioconda bedtools numpy pandas scipy statsmodels pybigwig -y
 ```
+## Quick start
 
+### Run enrichment analysis
 
+### Input data
+- Enhancer and TAD coordinates are GRCh38 BED coordinates.
+- Custom DNM inputs must be tab-delimited BED files with at least three columns and chromosome names matching the enhancer files (chr1, chr2, ...).
+- To analyze a custom DNM file, pass --dnv file.
+
+Check resource
+```
+python scripts/run_enrichment.py --resource atlas
+python scripts/run_enrichment.py --resource scenhancer
+```
+Run example
+```
+python scripts/run_enrichment.py \
+  --resource atlas \
+  --dnv example/example.bed
+```
+## TAD-constrained candidate-gene annotation
+After selecting a phenotype-relevant enriched enhancer set, annotate its overlapping DNMs. For example, fetal-brain enhancers:
+```
+python scripts/annotate_tad.py \
+  --dnv example/example.bed \
+  --resource atlas \
+  --enhancer-set Fetal_brain \
+  --tad brain \
+  --output results/tad/example_fetal_brain.tsv
+```
+For craniofacial analyses, use --tad cncc. The output contains the overlapping enhancer interval, TAD interval, boundary-crossing status, and all protein-coding genes in that TAD.
+
+TAD co-membership nominates genes in the same regulatory neighborhood; it does not establish a direct enhancer-target relationship.
 
 ## Preprocessing
 
