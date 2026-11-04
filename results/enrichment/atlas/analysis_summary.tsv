@@ -1,0 +1,2 @@
+resource	enhancer_sets	union_bp	dnm_in_union	result_file
+atlas	52	693704571	330	results/enrichment/atlas/enhancer_enrichment.csv

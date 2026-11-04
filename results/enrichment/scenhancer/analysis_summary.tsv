@@ -1,0 +1,2 @@
+resource	enhancer_sets	union_bp	dnm_in_union	result_file
+scenhancer	165	552256362	268	results/enrichment/scenhancer/enhancer_enrichment.csv
