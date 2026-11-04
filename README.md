@@ -19,9 +19,8 @@ conda create -n cellpathway python=3.10
 conda activate cellpathway
 conda install -c conda-forge -c bioconda bedtools numpy pandas scipy statsmodels pybigwig -y
 ```
-## Quick start
 
-### Run enrichment analysis
+## Run enrichment analysis
 
 ### Input data
 - Enhancer and TAD coordinates are GRCh38 BED coordinates.
